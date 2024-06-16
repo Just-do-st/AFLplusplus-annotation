@@ -324,7 +324,7 @@ static void __afl_map_shm_fuzz() {
 
     }
 
-    __afl_fuzz_len = (u32 *)map;
+    __afl_fuzz_len = (u32 *)map; // 共享测试用例的共享内存动态大小
     __afl_fuzz_ptr = map + sizeof(u32);
 
     if (__afl_debug) {
@@ -359,7 +359,7 @@ static void __afl_map_shm(void) {
 
     __afl_map_size = ++__afl_final_loc;  // as we count starting 0
 
-    if (getenv("AFL_DUMP_MAP_SIZE")) {
+    if (getenv("AFL_DUMP_MAP_SIZE")) { // 输出bitmap大小
 
       printf("%u\n", __afl_map_size);
       exit(-1);

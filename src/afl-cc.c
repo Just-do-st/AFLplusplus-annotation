@@ -3363,7 +3363,7 @@ static void edit_params(aflcc_state_t *aflcc, u32 argc, char **argv,
 
   }
 
-  if (aflcc->compiler_mode == GCC || aflcc->compiler_mode == CLANG) {
+  if (aflcc->compiler_mode == GCC || aflcc->compiler_mode == CLANG) { // 原始插桩需要汇编器afl-as
 
     add_assembler(aflcc);
 
