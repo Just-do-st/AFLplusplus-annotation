@@ -525,7 +525,7 @@ void find_built_deps(aflcc_state_t *aflcc) {
 
   char *ptr = NULL;
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) || defined(__i386__)
   if ((ptr = find_object(aflcc, "afl-as")) != NULL) {
 
   #ifndef __APPLE__
@@ -1911,7 +1911,13 @@ void add_sanitizers(aflcc_state_t *aflcc, char **envp) {
     }
 
     add_defs_fortify(aflcc, 0);
-    if (!aflcc->have_asan) { insert_param(aflcc, "-fsanitize=address"); }
+    if (!aflcc->have_asan) {
+
+      insert_param(aflcc, "-fsanitize=address");
+      insert_param(aflcc, "-fno-common");
+
+    }
+
     aflcc->have_asan = 1;
 
   } else if (getenv("AFL_USE_MSAN") || aflcc->have_msan) {
@@ -2360,8 +2366,7 @@ static void add_aflpplib(aflcc_state_t *aflcc) {
     insert_param(aflcc, afllib);
 
 #ifdef __APPLE__
-    insert_param(aflcc, "-Wl,-undefined");
-    insert_param(aflcc, "dynamic_lookup");
+    insert_param(aflcc, "-Wl,-undefined,dynamic_lookup");
 #endif
 
   }
@@ -2788,11 +2793,11 @@ static void maybe_usage(aflcc_state_t *aflcc, int argc, char **argv) {
         "MODES:                                  NCC PERSIST DICT   LAF "
         "CMPLOG SELECT\n"
         "  [LLVM] LLVM:             %s%s\n"
-        "      PCGUARD              %s    yes yes     module yes yes    "
+        "      PCGUARD              %s yes yes     module yes yes    "
         "yes\n"
         "      NATIVE               AVAILABLE    no  yes     no     no  "
         "part.  yes\n"
-        "      CLASSIC              %s    no  yes     module yes yes    "
+        "      CLASSIC              %s no  yes     module yes yes    "
         "yes\n"
         "        - NORMAL\n"
         "        - CALLER\n"
@@ -2809,10 +2814,10 @@ static void maybe_usage(aflcc_state_t *aflcc, int argc, char **argv) {
         "  [GCC/CLANG] simple gcc/clang: %s%s\n"
         "      CLASSIC              DEFAULT      no  no      no     no  no     "
         "no\n\n",
-        aflcc->have_llvm ? "AVAILABLE" : "unavailable!",
+        aflcc->have_llvm ? "AVAILABLE   " : "unavailable!",
         aflcc->compiler_mode == LLVM ? " [SELECTED]" : "",
-        aflcc->have_llvm ? "AVAILABLE" : "unavailable!",
-        aflcc->have_llvm ? "AVAILABLE" : "unavailable!",
+        aflcc->have_llvm ? "AVAILABLE   " : "unavailable!",
+        aflcc->have_llvm ? "AVAILABLE   " : "unavailable!",
         aflcc->have_lto ? "AVAILABLE" : "unavailable!",
         aflcc->compiler_mode == LTO ? " [SELECTED]" : "",
         aflcc->have_gcc_plugin ? "AVAILABLE" : "unavailable!",
@@ -2838,7 +2843,7 @@ static void maybe_usage(aflcc_state_t *aflcc, int argc, char **argv) {
         "  The best is LTO but it often needs RANLIB and AR settings outside "
         "of afl-cc.\n\n");
 
-#if LLVM_MAJOR > 10 || (LLVM_MAJOR == 10 && LLVM_MINOR > 0)
+#if LLVM_MAJOR >= 11 || (LLVM_MAJOR == 10 && LLVM_MINOR > 0)
   #define NATIVE_MSG                                                   \
     "  LLVM-NATIVE:  use llvm's native PCGUARD instrumentation (less " \
     "performant)\n"
